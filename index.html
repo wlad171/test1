@@ -4,201 +4,290 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Snake Game</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
             margin: 0;
-            background-color: var(--tg-theme-bg-color, #1a1a1a);
-            font-family: 'Press Start 2P', cursive;
-            color: var(--tg-theme-text-color, #fff);
-            touch-action: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        .game-container {
-            position: relative;
-            width: 100vmin;
-            height: 100vmin;
-            max-width: 100%;
-            max-height: 100vh;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            border: 4px solid var(--tg-theme-button-color, #4CAF50);
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             background-color: #000;
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
-            box-sizing: border-box;
+            touch-action: none;
         }
-
-        #score {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: var(--tg-theme-button-color, #4CAF50);
-            text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
         }
-
-        .menu {
+        canvas {
+            border: 2px solid #0066cc;
+            background-color: #000;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1;
+        }
+        #menu {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.9));
+            background-color: rgba(0, 0, 0, 0.9);
             padding: 20px;
-            border: 4px solid var(--tg-theme-button-color, #4CAF50);
+            border: 2px solid #0066cc;
             text-align: center;
-            width: 80%;
-            max-width: 300px;
-            border-radius: 12px;
+            color: #0066cc;
+            font-family: 'Courier New', monospace;
         }
-
-        .menu h1 {
-            color: var(--tg-theme-button-color, #4CAF50);
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-
-        .menu-button {
-            background-color: var(--tg-theme-button-color, #4CAF50);
+        .button {
+            background-color: #0066cc;
+            color: white;
             border: none;
-            color: var(--tg-theme-button-text-color, white);
             padding: 10px 20px;
             margin: 5px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 200px;
-            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
         }
-
-        .difficulty {
-            margin-top: 10px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 5px;
+        .button.selected {
+            background-color: #003366;
         }
-
-        .difficulty-button {
-            background-color: var(--tg-theme-secondary-bg-color, #333);
-            border: 2px solid var(--tg-theme-button-color, #4CAF50);
-            color: var(--tg-theme-button-color, #4CAF50);
-            padding: 8px 15px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 80px;
-            max-width: 100px;
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0066cc;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
         }
-
-        .difficulty-button.active {
-            background-color: var(--tg-theme-button-color, #4CAF50);
-            color: var(--tg-theme-button-text-color, white);
-        }
-
-        .high-scores {
-            margin-top: 20px;
-            font-size: 12px;
-            color: var(--tg-theme-button-color, #4CAF50);
-        }
-
-        .skins {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .skins h2 {
-            width: 100%;
-            color: var(--tg-theme-button-color, #4CAF50);
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .skin-button {
-            background-color: var(--tg-theme-secondary-bg-color, #333);
-            border: 2px solid var(--tg-theme-button-color, #4CAF50);
-            color: var(--tg-theme-button-color, #4CAF50);
-            padding: 8px 15px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 80px;
-            max-width: 100px;
-        }
-
-        .skin-button.active {
-            background-color: var(--tg-theme-button-color, #4CAF50);
-            color: var(--tg-theme-button-text-color, white);
-        }
-
-        #controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            gap: 10px;
-            z-index: 100;
-        }
-
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div id="score">Score: 0</div>
+    <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        <div id="mainMenu" class="menu">
-            <h1>SNAKE GAME</h1>
-            <p style="color: var(--tg-theme-hint-color, #888); margin: 10px 0;">Swipe to control the snake</p>
-            <button class="menu-button" onclick="startGame()">START GAME</button>
-            <div class="skins">
-                <h2>SELECT SKIN</h2>
-                <button class="skin-button active" onclick="setSkin('classic')">CLASSIC</button>
-                <button class="skin-button" onclick="setSkin('rainbow')">RAINBOW</button>
-                <button class="skin-button" onclick="setSkin('neon')">NEON</button>
+        <div id="score">Score: 0</div>
+        <div id="menu">
+            <h2>SNAKE GAME</h2>
+            <p>Swipe to control the snake</p>
+            <button id="startButton" class="button">START GAME</button>
+            <div>
+                <h3>SELECT SKIN</h3>
+                <button class="button selected" data-skin="classic">CLASSIC</button>
+                <button class="button" data-skin="rainbow">RAINBOW</button>
+                <button class="button" data-skin="neon">NEON</button>
             </div>
-            <div class="difficulty">
-                <button class="difficulty-button active" onclick="setDifficulty('easy')">EASY</button>
-                <button class="difficulty-button" onclick="setDifficulty('medium')">MEDIUM</button>
-                <button class="difficulty-button" onclick="setDifficulty('hard')">HARD</button>
+            <div>
+                <h3>DIFFICULTY</h3>
+                <button class="button selected" data-difficulty="easy">EASY</button>
+                <button class="button" data-difficulty="medium">MEDIUM</button>
+                <button class="button" data-difficulty="hard">HARD</button>
             </div>
-            <div class="high-scores">
-                <h2>HIGH SCORES</h2>
-                <div id="highScoresList"></div>
+            <div id="highScores">
+                <h3>HIGH SCORES</h3>
+                <ol id="scoresList"></ol>
             </div>
         </div>
     </div>
-    <div id="controls">
-        <button class="control-button" id="upButton">↑</button>
-        <div style="display: flex; gap: 10px;">
-            <button class="control-button" id="leftButton">←</button>
-            <button class="control-button" id="rightButton">→</button>
-        </div>
-        <button class="control-button" id="downButton">↓</button>
-    </div>
-    <script src="game.js"></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const menu = document.getElementById('menu');
+        const startButton = document.getElementById('startButton');
+        const scoresList = document.getElementById('scoresList');
+
+        // Set canvas size
+        canvas.width = 400;
+        canvas.height = 400;
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [];
+        let food = {};
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+        let gameSpeed = 200; // Slower initial speed
+        let gameLoop;
+        let highScores = [];
+        let selectedSkin = 'classic';
+        let selectedDifficulty = 'easy';
+
+        // Touch handling variables
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const minSwipeDistance = 30;
+
+        function initGame() {
+            snake = [{ x: 10, y: 10 }];
+            food = generateFood();
+            dx = 0;
+            dy = 0;
+            score = 0;
+            updateScore();
+
+            // Set game speed based on difficulty
+            switch(selectedDifficulty) {
+                case 'easy': gameSpeed = 300; break;
+                case 'medium': gameSpeed = 250; break;
+                case 'hard': gameSpeed = 200; break;
+            }
+        }
+
+        function generateFood() {
+            let newFood;
+            do {
+                newFood = {
+                    x: Math.floor(Math.random() * tileCount),
+                    y: Math.floor(Math.random() * tileCount)
+                };
+            } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
+            return newFood;
+        }
+
+        function drawGame() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw snake
+            snake.forEach((segment, index) => {
+                switch(selectedSkin) {
+                    case 'classic':
+                        ctx.fillStyle = '#0066cc';
+                        break;
+                    case 'rainbow':
+                        const hue = (index * 25) % 360;
+                        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                        break;
+                    case 'neon':
+                        ctx.fillStyle = '#00ff00';
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#00ff00';
+                        break;
+                }
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+                if (selectedSkin === 'neon') ctx.shadowBlur = 0;
+            });
+
+            // Draw food
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            // Wall collision
+            if (head.x < 0) head.x = tileCount - 1;
+            if (head.x >= tileCount) head.x = 0;
+            if (head.y < 0) head.y = tileCount - 1;
+            if (head.y >= tileCount) head.y = 0;
+
+            // Self collision
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(head);
+
+            // Food collision
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                updateScore();
+                food = generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function updateScore() {
+            scoreElement.textContent = `Score: ${score}`;
+        }
+
+        function gameOver() {
+            clearInterval(gameLoop);
+            highScores.push(score);
+            highScores.sort((a, b) => b - a);
+            highScores = highScores.slice(0, 5);
+            updateHighScores();
+            menu.style.display = 'block';
+        }
+
+        function updateHighScores() {
+            scoresList.innerHTML = '';
+            highScores.forEach(score => {
+                const li = document.createElement('li');
+                li.textContent = score;
+                scoresList.appendChild(li);
+            });
+        }
+
+        // Touch controls
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    if (deltaX > 0 && dx !== 1) { dx = 1; dy = 0; }
+                    else if (deltaX < 0 && dx !== -1) { dx = -1; dy = 0; }
+                } else {
+                    // Vertical swipe
+                    if (deltaY > 0 && dy !== 1) { dx = 0; dy = 1; }
+                    else if (deltaY < 0 && dy !== -1) { dx = 0; dy = -1; }
+                }
+            }
+        });
+
+        // Game controls
+        startButton.addEventListener('click', () => {
+            menu.style.display = 'none';
+            initGame();
+            dx = 1; // Start moving right
+            dy = 0;
+            gameLoop = setInterval(() => {
+                moveSnake();
+                drawGame();
+            }, gameSpeed);
+        });
+
+        // Skin selection
+        document.querySelectorAll('[data-skin]').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('[data-skin]').forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+                selectedSkin = button.dataset.skin;
+            });
+        });
+
+        // Difficulty selection
+        document.querySelectorAll('[data-difficulty]').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('[data-difficulty]').forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+                selectedDifficulty = button.dataset.difficulty;
+            });
+        });
+
+        // Initial setup
+        updateHighScores();
+    </script>
 </body>
 </html>
