@@ -76,28 +76,46 @@ document.addEventListener('keydown', (e) => {
 
 // Handle touch controls
 function setupTouchControls() {
-    controls.style.display = 'flex';
-    const handleDirection = (direction) => {
-        switch(direction) {
-            case 'up':
-                if (dy !== 1) { dx = 0; dy = -1; }
-                break;
-            case 'down':
-                if (dy !== -1) { dx = 0; dy = 1; }
-                break;
-            case 'left':
-                if (dx !== 1) { dx = -1; dy = 0; }
-                break;
-            case 'right':
-                if (dx !== -1) { dx = 1; dy = 0; }
-                break;
-        }
-    };
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const minSwipeDistance = 30;
 
-    upButton.addEventListener('touchstart', () => handleDirection('up'));
-    downButton.addEventListener('touchstart', () => handleDirection('down'));
-    leftButton.addEventListener('touchstart', () => handleDirection('left'));
-    rightButton.addEventListener('touchstart', () => handleDirection('right'));
+    canvas.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            // Horizontal swipe
+            if (Math.abs(deltaX) >= minSwipeDistance) {
+                if (deltaX > 0 && dx !== -1) {
+                    dx = 1; dy = 0;
+                } else if (deltaX < 0 && dx !== 1) {
+                    dx = -1; dy = 0;
+                }
+            }
+        } else {
+            // Vertical swipe
+            if (Math.abs(deltaY) >= minSwipeDistance) {
+                if (deltaY > 0 && dy !== -1) {
+                    dx = 0; dy = 1;
+                } else if (deltaY < 0 && dy !== 1) {
+                    dx = 0; dy = -1;
+                }
+            }
+        }
+    });
 }
 
 function drawSnake() {

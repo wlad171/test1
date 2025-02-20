@@ -164,19 +164,6 @@
             z-index: 100;
         }
 
-        .control-button {
-            width: 50px;
-            height: 50px;
-            background-color: rgba(76, 175, 80, 0.3);
-            border: 2px solid var(--tg-theme-button-color, #4CAF50);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--tg-theme-button-color, #4CAF50);
-            font-size: 20px;
-            touch-action: manipulation;
-        }
     </style>
 </head>
 <body>
@@ -185,6 +172,7 @@
         <canvas id="gameCanvas"></canvas>
         <div id="mainMenu" class="menu">
             <h1>SNAKE GAME</h1>
+            <p style="color: var(--tg-theme-hint-color, #888); margin: 10px 0;">Swipe to control the snake</p>
             <button class="menu-button" onclick="startGame()">START GAME</button>
             <div class="skins">
                 <h2>SELECT SKIN</h2>
