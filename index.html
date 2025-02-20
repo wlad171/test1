@@ -2,292 +2,136 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Snake Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Snake Game</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #000;
-            touch-action: none;
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            font-family: 'Arial', sans-serif;
         }
-        #gameContainer {
+
+        .game-container {
             position: relative;
             width: 100%;
             max-width: 600px;
+            margin: 20px;
         }
-        canvas {
-            border: 2px solid #0066cc;
-            background-color: #000;
+
+        #gameCanvas {
             width: 100%;
-            height: auto;
-            aspect-ratio: 1;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
         }
-        #menu {
+
+        .menu {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            border: 2px solid #0066cc;
             text-align: center;
-            color: #0066cc;
-            font-family: 'Courier New', monospace;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #0066ff;
+            display: none;
         }
+
+        .menu.active {
+            display: block;
+        }
+
+        .title {
+            font-size: 2em;
+            color: #0066ff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+        }
+
         .button {
-            background-color: #0066cc;
-            color: white;
+            background: linear-gradient(45deg, #0066ff, #00ccff);
             border: none;
             padding: 10px 20px;
             margin: 5px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
+            color: white;
             border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 150px;
         }
-        .button.selected {
-            background-color: #003366;
+
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 102, 255, 0.5);
         }
-        #score {
+
+        .score {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            color: #0066cc;
-            font-family: 'Courier New', monospace;
-            font-size: 20px;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 1.2em;
+            text-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+        }
+
+        .high-scores {
+            margin-top: 20px;
+            color: #0066ff;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                margin: 10px;
+            }
+
+            .button {
+                width: 120px;
+                padding: 8px 16px;
+            }
+
+            .title {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
+    <div class="game-container">
         <canvas id="gameCanvas"></canvas>
-        <div id="score">Score: 0</div>
-        <div id="menu">
-            <h2>SNAKE GAME</h2>
+        <div id="score" class="score">Score: 0</div>
+        <div id="menu" class="menu active">
+            <h1 class="title">SNAKE GAME</h1>
             <p>Swipe to control the snake</p>
-            <button id="startButton" class="button">START GAME</button>
+            <button id="startGame" class="button">START GAME</button>
             <div>
-                <h3>SELECT SKIN</h3>
-                <button class="button selected" data-skin="classic">CLASSIC</button>
-                <button class="button" data-skin="rainbow">RAINBOW</button>
-                <button class="button" data-skin="neon">NEON</button>
+                <button id="classicSkin" class="button">CLASSIC</button>
+                <button id="rainbowSkin" class="button">RAINBOW</button>
+                <button id="neonSkin" class="button">NEON</button>
             </div>
             <div>
-                <h3>DIFFICULTY</h3>
-                <button class="button selected" data-difficulty="easy">EASY</button>
-                <button class="button" data-difficulty="medium">MEDIUM</button>
-                <button class="button" data-difficulty="hard">HARD</button>
+                <button id="easyMode" class="button">EASY</button>
+                <button id="mediumMode" class="button">MEDIUM</button>
+                <button id="hardMode" class="button">HARD</button>
             </div>
-            <div id="highScores">
-                <h3>HIGH SCORES</h3>
-                <ol id="scoresList"></ol>
+            <div class="high-scores">
+                <h2>HIGH SCORES</h2>
+                <p id="highScore">1. 150</p>
             </div>
         </div>
     </div>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const menu = document.getElementById('menu');
-        const startButton = document.getElementById('startButton');
-        const scoresList = document.getElementById('scoresList');
-
-        // Set canvas size
-        canvas.width = 400;
-        canvas.height = 400;
-
-        const gridSize = 20;
-        const tileCount = canvas.width / gridSize;
-
-        let snake = [];
-        let food = {};
-        let dx = 0;
-        let dy = 0;
-        let score = 0;
-        let gameSpeed = 200; // Slower initial speed
-        let gameLoop;
-        let highScores = [];
-        let selectedSkin = 'classic';
-        let selectedDifficulty = 'easy';
-
-        // Touch handling variables
-        let touchStartX = 0;
-        let touchStartY = 0;
-        const minSwipeDistance = 30;
-
-        function initGame() {
-            snake = [{ x: 10, y: 10 }];
-            food = generateFood();
-            dx = 0;
-            dy = 0;
-            score = 0;
-            updateScore();
-
-            // Set game speed based on difficulty
-            switch(selectedDifficulty) {
-                case 'easy': gameSpeed = 300; break;
-                case 'medium': gameSpeed = 250; break;
-                case 'hard': gameSpeed = 200; break;
-            }
-        }
-
-        function generateFood() {
-            let newFood;
-            do {
-                newFood = {
-                    x: Math.floor(Math.random() * tileCount),
-                    y: Math.floor(Math.random() * tileCount)
-                };
-            } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
-            return newFood;
-        }
-
-        function drawGame() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw snake
-            snake.forEach((segment, index) => {
-                switch(selectedSkin) {
-                    case 'classic':
-                        ctx.fillStyle = '#0066cc';
-                        break;
-                    case 'rainbow':
-                        const hue = (index * 25) % 360;
-                        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-                        break;
-                    case 'neon':
-                        ctx.fillStyle = '#00ff00';
-                        ctx.shadowBlur = 10;
-                        ctx.shadowColor = '#00ff00';
-                        break;
-                }
-                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
-                if (selectedSkin === 'neon') ctx.shadowBlur = 0;
-            });
-
-            // Draw food
-            ctx.fillStyle = '#ff0000';
-            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
-        }
-
-        function moveSnake() {
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-
-            // Wall collision
-            if (head.x < 0) head.x = tileCount - 1;
-            if (head.x >= tileCount) head.x = 0;
-            if (head.y < 0) head.y = tileCount - 1;
-            if (head.y >= tileCount) head.y = 0;
-
-            // Self collision
-            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameOver();
-                return;
-            }
-
-            snake.unshift(head);
-
-            // Food collision
-            if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                updateScore();
-                food = generateFood();
-            } else {
-                snake.pop();
-            }
-        }
-
-        function updateScore() {
-            scoreElement.textContent = `Score: ${score}`;
-        }
-
-        function gameOver() {
-            clearInterval(gameLoop);
-            highScores.push(score);
-            highScores.sort((a, b) => b - a);
-            highScores = highScores.slice(0, 5);
-            updateHighScores();
-            menu.style.display = 'block';
-        }
-
-        function updateHighScores() {
-            scoresList.innerHTML = '';
-            highScores.forEach(score => {
-                const li = document.createElement('li');
-                li.textContent = score;
-                scoresList.appendChild(li);
-            });
-        }
-
-        // Touch controls
-        canvas.addEventListener('touchstart', e => {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-
-        canvas.addEventListener('touchmove', e => {
-            e.preventDefault();
-        });
-
-        canvas.addEventListener('touchend', e => {
-            e.preventDefault();
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    // Horizontal swipe
-                    if (deltaX > 0 && dx !== 1) { dx = 1; dy = 0; }
-                    else if (deltaX < 0 && dx !== -1) { dx = -1; dy = 0; }
-                } else {
-                    // Vertical swipe
-                    if (deltaY > 0 && dy !== 1) { dx = 0; dy = 1; }
-                    else if (deltaY < 0 && dy !== -1) { dx = 0; dy = -1; }
-                }
-            }
-        });
-
-        // Game controls
-        startButton.addEventListener('click', () => {
-            menu.style.display = 'none';
-            initGame();
-            dx = 1; // Start moving right
-            dy = 0;
-            gameLoop = setInterval(() => {
-                moveSnake();
-                drawGame();
-            }, gameSpeed);
-        });
-
-        // Skin selection
-        document.querySelectorAll('[data-skin]').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('[data-skin]').forEach(btn => btn.classList.remove('selected'));
-                button.classList.add('selected');
-                selectedSkin = button.dataset.skin;
-            });
-        });
-
-        // Difficulty selection
-        document.querySelectorAll('[data-difficulty]').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('[data-difficulty]').forEach(btn => btn.classList.remove('selected'));
-                button.classList.add('selected');
-                selectedDifficulty = button.dataset.difficulty;
-            });
-        });
-
-        // Initial setup
-        updateHighScores();
-    </script>
+    <script src="game.js"></script>
 </body>
 </html>
